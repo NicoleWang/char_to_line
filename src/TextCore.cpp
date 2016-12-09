@@ -8,6 +8,9 @@ TextChar::TextChar():m_box(cv::Rect(0,0,0,0)),
                      m_score(0.0f){
 }
 
+TextChar::~TextChar(){
+}
+
 TextChar::TextChar(const std::string& line, bool has_score) {
     std::stringstream ss(line);
     if (has_score) {

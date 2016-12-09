@@ -13,11 +13,11 @@
 namespace text {
 
 class TextChar {
+    public:
     TextChar();
     TextChar(const std::string& line, bool has_score);
     TextChar(const cv::Rect& rect, const float score);
     ~TextChar();
-    public:
     inline void get_center();
     inline float get_area();
     inline float get_inter(const TextChar& other);
