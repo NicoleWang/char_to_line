@@ -23,27 +23,23 @@ std::vector<std::string> get_filelist(const std::string& dir_name) {
     return filename_v;
 }
 
-bool  load_boxes_from_file(const std::string& filepath) {
+std::vector<TextChar>  load_boxes_from_file(const std::string& filepath) {
+    std::vector<TextChar> boxes;
     std::ifstream infile;
     infile.open(filepath.c_str(), std::ios::in);
     if(!infile.is_open()) {
         std::cerr << "Open file: " << filepath << " failed! " << std::endl;
-        return false;
-    }
-    std::string line;
-    while(std::getline(infile, line)) {
-        std::stringstream ss(line);
-        int left = 0;
-        int top = 0;
-        int width = 0;
-        int height = 0;
-        float score = 0.0f;
-        ss >> left >> top >> width >> height >> score;
-        std::cout << left << " " << top  <<  " "  
-                  << width << " " << height << " "
-                  << score << std::endl;
+    } else {
+        std::string line;
+        while(std::getline(infile, line)) {
+            std::stringstream ss(line);
+            cv::Rect rect;
+            float score = 0.0f;
+            ss >> rect.x >> rect.y >> rect.width >> rect.height >> score;
+            boxes.push_back(TextChar(rect, score));
+        }
     }
     infile.close();
-    return true;
+    return boxes;
 }
 }
