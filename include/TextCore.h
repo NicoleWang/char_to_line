@@ -33,7 +33,7 @@ class TextChar {
 
 class TextPair {
     public:
-    TextPair();
+    //TextPair();
     //TextPair(const unsigned int idx);
     unsigned int m_idx;
     std::vector<unsigned int> m_pair_idx;
@@ -43,7 +43,14 @@ class TextPair {
 
 class TextLine {
     public:
-    void gen_text_pairs(std::vector<TextChar>& boxes);
+    TextLine(const cv::Mat& img, const std::vector<TextChar>& boxes);
+    void gen_text_pairs();
+    void vis_pairs();
+
+    cv::Mat m_im;
+    std::string m_imname;
+    std::vector<TextChar> m_boxes;
+    std::vector<TextPair> m_pairs;
 };
 }//end of namespace text
 #endif

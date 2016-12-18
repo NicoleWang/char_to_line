@@ -65,4 +65,9 @@ cv::Mat char_centers_to_mat(std::vector<TextChar>& boxes) {
     return box_mat;
 }
 
+float compute_pts_dist(const cv::Point2f& pt1, const cv::Point2f& pt2) {
+    return std::sqrt((pt1.x - pt2.x) * (pt1.x - pt2.x) 
+                     + (pt1.y - pt2.y) * (pt1.y - pt2.y));
+}
+
 }

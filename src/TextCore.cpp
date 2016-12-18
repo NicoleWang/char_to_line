@@ -64,15 +64,52 @@ float TextChar::get_iou(const TextChar& other) {
     return (1.0f * area_inter / (area_self + area_other - area_inter));
 }
 
-void TextLine::gen_text_pairs(std::vector<TextChar>& boxes) {
-    cv::Mat centers = char_centers_to_mat(boxes);
-    int knn_num = 5;
+TextLine::TextLine(const cv::Mat& img, const std::vector<TextChar>& boxes) {
+    m_im = img.clone();
+    m_boxes = boxes;
+}
+void TextLine::vis_pairs(){ 
+    for (int i = 0; i < m_pairs.size(); ++i) {
+        cv::Mat vis_im = m_im.clone();
+        int id = m_pairs[i].m_idx;
+        cv::Scalar color(0, 0, 255);
+        cv::rectangle(vis_im, m_boxes[id].m_box, color);
+        for (int j = 0; j < m_pairs[i].m_pair_idx.size(); ++j) {
+            int kid = m_pairs[i].m_pair_idx[j];
+            cv::rectangle(vis_im, m_boxes[kid].m_box, color);
+        }
+        char savename[128];
+        sprintf(savename,"result_%d.jpg", i);
+        cv::imwrite(savename, vis_im);
+    }
+}
+
+
+void TextLine::gen_text_pairs() {
+    cv::Mat centers = char_centers_to_mat(m_boxes);
+    int knn_num = 5;// nearest neightbour num for each char box
     cv::flann::KDTreeIndexParams indexParams(5);
-    cv::flann::Index kdtree(centers, indexParams);
+    cv::flann::Index kdtree(centers, indexParams); //kdtree is fast, but it initiated with random seeds, take care.
     cv::Mat indices;
     cv::Mat dists;
     kdtree.knnSearch(centers, indices, dists, knn_num, cv::flann::SearchParams(64));
-    std::cout << indices << std::endl;
+    //std::cout << indices << std::endl;
+    //std::cout << dists << std::endl;
 
+    for (int i = 0; i < centers.rows; ++i) {
+        TextPair tp;
+        tp.m_idx = i;
+        for (int j = 1; j < knn_num; ++j) {
+            float pt_dist = std::sqrt(dists.at<float>(i, j));
+            int kid = indices.at<int>(i, j);
+            float center_dist_ratio = pt_dist / (0.5 * m_boxes[i].m_box.width + 0.5 *  m_boxes[kid].m_box.width);
+            if (center_dist_ratio <= 1.5f 
+                && (m_boxes[i].m_box.x <= m_boxes[kid].m_box.x 
+                    || m_boxes[i].m_box.y <= m_boxes[kid].m_box.y)){
+                tp.m_pair_idx.push_back(kid); //push back valid neighbor
+            }
+        }
+        m_pairs.push_back(tp);
+    }
 }
-}
+}//end of namespace
