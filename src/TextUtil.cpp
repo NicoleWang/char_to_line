@@ -52,8 +52,17 @@ void vis_boxes(cv::Mat& im, const std::vector<TextChar>& boxes) {
                      boxes[i].m_box.y + boxes[i].m_box.height - 1);
         cv::rectangle(im, boxes[i].m_box, cv::Scalar(255, 0, 0));
         cv::Rect rect = boxes[i].m_box;
-        std::cout << rect.x << " " << rect.y << " " << rect.width << " " << rect.height << std::endl;
+        //std::cout << rect.x << " " << rect.y << " " << rect.width << " " << rect.height << std::endl;
     }
+}
+
+cv::Mat char_centers_to_mat(std::vector<TextChar>& boxes) {
+    cv::Mat box_mat(boxes.size(), 2, CV_32FC1);
+    for (int i = 0; i < boxes.size(); ++i) {
+        box_mat.at<float>(i, 0) = boxes[i].m_center.x;
+        box_mat.at<float>(i, 1) = boxes[i].m_center.y;
+    }
+    return box_mat;
 }
 
 }

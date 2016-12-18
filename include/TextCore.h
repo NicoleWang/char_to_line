@@ -10,6 +10,8 @@
 #include <string>
 #include <opencv2/opencv.hpp>
 
+#define EPSILON 0.0001
+#define KNN_NUM 5
 namespace text {
 
 class TextChar {
@@ -19,7 +21,7 @@ class TextChar {
     TextChar(const cv::Rect& rect, const float score);
     ~TextChar();
     inline void get_center();
-    inline float get_area();
+    inline float get_area() const;
     inline float get_inter(const TextChar& other);
     inline float get_union(const TextChar& other);
     inline float get_iou(const TextChar& other);
@@ -27,6 +29,21 @@ class TextChar {
     cv::Rect m_box;
     cv::Point2f m_center;
     float m_score;
+};
+
+class TextPair {
+    public:
+    TextPair();
+    //TextPair(const unsigned int idx);
+    unsigned int m_idx;
+    std::vector<unsigned int> m_pair_idx;
+
+    void eliminate_unvalid_pair();
+};
+
+class TextLine {
+    public:
+    void gen_text_pairs(std::vector<TextChar>& boxes);
 };
 }//end of namespace text
 #endif
