@@ -70,4 +70,21 @@ float compute_pts_dist(const cv::Point2f& pt1, const cv::Point2f& pt2) {
                      + (pt1.y - pt2.y) * (pt1.y - pt2.y));
 }
 
+float compute_pts_angle(const cv::Point2f& pt1, const cv::Point2f& pt2) {
+    float temp = (1.0f * pt2.y - pt1.y) / (1.0f * pt2.x - pt1.x);
+    float angle = std::atan(temp) * 180 / PI;
+    return angle;
+}
+
+bool compare_box_x(const std::pair<int, TextChar>& p1, const std::pair<int, TextChar>& p2) {
+    //bool res = (p1.second.m_box.x <= p2.second.m_box.x)?true:false;
+    return (p1.second.m_box.x < p2.second.m_box.x)?true:false;
+}
+
+bool is_two_boxes_close(const TextChar& left, const TextChar& right) {
+    float dist = compute_pts_dist(left.m_center, right.m_center);
+//  float dist = right.m_box.x - left.m_box.x - left.m_box.width + 1;
+    float thresh = 0.5 * std::min(left.m_box.width, right.m_box.width);
+    return dist<=thresh?true:false;
+}
 }
