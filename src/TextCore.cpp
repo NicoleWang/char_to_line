@@ -128,12 +128,15 @@ void TextLine::vis_pairs(const std::vector<TextPair>& pairs){
         cv::Mat vis_im = m_im.clone();
         //int id = m_final_pairs[i].m_idx;
         int id = pairs[i].m_start;
+        int end_id = pairs[i].m_end;
         cv::Scalar color(0, 0, 255);
         for (int j = 0; j < pairs[i].m_pair_idx.size(); ++j) {
             int kid = pairs[i].m_pair_idx[j].first;
             cv::rectangle(vis_im, m_boxes[kid].m_box, color);
         }
         cv::rectangle(vis_im, m_boxes[id].m_box, cv::Scalar(255, 0, 0));
+        cv::rectangle(vis_im, m_boxes[end_id].m_box, cv::Scalar(255, 0, 0));
+        cv::rectangle(vis_im, m_initial_lines[i], cv::Scalar(0, 255, 0));
         std::string prefix = get_name_prefix(m_image_name);
         char savename[128];
         sprintf(savename,"%s/%s_%d.jpg", m_save_dir.c_str(), prefix.c_str(), i);
@@ -141,6 +144,16 @@ void TextLine::vis_pairs(const std::vector<TextPair>& pairs){
     }
 }
 
+void TextLine::vis_lines(const std::vector<cv::Rect>& lines) {
+    cv::Mat vis_im = m_im.clone();
+    cv::Scalar color(0, 0, 255);
+    for (unsigned int i = 0; i < m_initial_lines.size(); ++i) {
+        cv::rectangle(vis_im, m_initial_lines[i], color);
+    }
+    char savename[128];
+    sprintf(savename,"%s/%s", m_save_dir.c_str(), m_image_name.c_str());
+    cv::imwrite(savename, vis_im);
+}
 
 void TextLine::gen_text_pairs() {
     cv::Mat centers = char_centers_to_mat(m_boxes);
@@ -150,9 +163,9 @@ void TextLine::gen_text_pairs() {
     cv::Mat indices;
     cv::Mat dists;
     kdtree.knnSearch(centers, indices, dists, knn_num, cv::flann::SearchParams(64));
-    std::cout << indices << std::endl;
+    //std::cout << indices << std::endl;
     eliminate_unvalid_pair(centers, dists, indices);
-    std::cout << "eliminate done " << centers.rows << std::endl;
+    //std::cout << "eliminate done " << centers.rows << std::endl;
     //std::cout << dists << std::endl;
 }
 
@@ -160,7 +173,7 @@ void TextLine::eliminate_unvalid_pair(const cv::Mat& centers,
                                       const cv::Mat& dists,
                                       const cv::Mat& indices) {
    //eliminate left / top neighbors
-    std::cout << "boxes num: " << centers.rows << std::endl;
+    //std::cout << "boxes num: " << centers.rows << std::endl;
      for (int i = 0; i < centers.rows; ++i) {
         TextPair tp;
         std::vector<unsigned int> indexs;
@@ -207,7 +220,7 @@ void TextLine::merge_text_pairs(){
             int merge_cnt = 0;
             for (unsigned int j = i + 1; j < m_pairs.size(); ++j) {
                 bool is_merge = false;
-                if(!flags[j]) {
+                if((!flags[j])) {
                     continue;
                 }
                 /*
@@ -243,6 +256,28 @@ void TextLine::merge_text_pairs(){
         m_final_pairs.push_back(tp);
     }
     std::cout << "final path size: " << m_final_pairs.size() << std::endl;
+}
+
+void TextLine::gen_initial_lines() {
+    for (unsigned int i = 0; i < m_final_pairs.size(); ++i) {
+        //m_final_pairs[i].sort_pairs_idx();
+        cv::Rect line;
+        int start_id = m_final_pairs[i].m_start;
+        int end_id = m_final_pairs[i].m_end;
+        line.x = m_boxes[start_id].m_box.x;
+        line.width = m_boxes[end_id].m_box.x + m_boxes[end_id].m_box.width - line.x;
+        float liney = m_final_pairs[i].m_pair_idx[0].second.m_box.y;
+        float lineb = 0;
+        for (unsigned int j = 0; j < m_final_pairs[i].m_pair_idx.size(); ++j) {
+            float boxy = m_final_pairs[i].m_pair_idx[j].second.m_box.y;
+            float boxb = m_final_pairs[i].m_pair_idx[j].second.m_box.y + m_final_pairs[i].m_pair_idx[j].second.m_box.height - 1;
+            liney = (liney<=boxy)?liney:boxy;
+            lineb = (lineb>=boxb)?lineb:boxb;
+        }
+        line.y = static_cast<int>(liney);
+        line.height = static_cast<int>(lineb - liney + 1);
+        m_initial_lines.push_back(line);
+    }
 }
 
 }//end of namespace

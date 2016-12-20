@@ -97,7 +97,7 @@ bool compare_box_x(const std::pair<int, TextChar>& p1, const std::pair<int, Text
 bool is_two_boxes_close(const TextChar& left, const TextChar& right) {
     float dist = compute_pts_dist(left.m_center, right.m_center);
 //  float dist = right.m_box.x - left.m_box.x - left.m_box.width + 1;
-    float thresh = 0.5 * std::min(left.m_box.width, right.m_box.width);
+    float thresh = 1.0 * std::min(left.m_box.width, right.m_box.width);
     return dist<=thresh?true:false;
 }
 

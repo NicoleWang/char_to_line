@@ -13,7 +13,7 @@ int main(int argc, char** argv) {
 
     for(unsigned int i = 0; i < filelist.size(); ++i) {
         if (image_num != i) {
-            continue;
+            //continue;
         }
         std::cout << "Processing " << i << "th image: " << " " << imglist[i] << std::endl;
         std::string imagepath = imgdir + "/" + imglist[i];
@@ -27,7 +27,9 @@ int main(int argc, char** argv) {
         line.gen_text_pairs();
 
         line.merge_text_pairs();
-        line.vis_pairs(line.m_final_pairs);
+        line.gen_initial_lines();
+        line.vis_lines(line.m_initial_lines);
+        //line.vis_pairs(line.m_final_pairs);
        //line.vis_pairs(line.m_pairs);
         //std::cout << centers << std::endl;
         //text::vis_boxes(img, boxes);

@@ -57,14 +57,19 @@ class TextLine {
                                           const cv::Mat& dists,
                                           const cv::Mat& indices);
     void merge_text_pairs();
+    void gen_initial_lines();
+    void gen_final_lines();
 
     void vis_pairs(const std::vector<TextPair>& pairs); 
+    void vis_lines(const std::vector<cv::Rect>& lines); 
     cv::Mat m_im;
     std::string m_image_name;
     std::string m_save_dir;;
     std::vector<TextChar> m_boxes;
     std::vector<TextPair> m_pairs;
     std::vector<TextPair> m_final_pairs;
+    std::vector<cv::Rect> m_initial_lines;
+    std::vector<cv::Rect> m_final_lines;
 };
 }//end of namespace text
 #endif
