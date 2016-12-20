@@ -60,7 +60,8 @@ class TextLine {
 
     void vis_pairs(const std::vector<TextPair>& pairs); 
     cv::Mat m_im;
-    std::string image_name;
+    std::string m_image_name;
+    std::string m_save_dir;;
     std::vector<TextChar> m_boxes;
     std::vector<TextPair> m_pairs;
     std::vector<TextPair> m_final_pairs;

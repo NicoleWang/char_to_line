@@ -82,25 +82,28 @@ bool TextPair::is_box_included(const TextPair& p) {
 }
 
 void TextPair::sort_pairs_idx() {
-    std::vector<std::pair<int, TextChar> > temp = m_pair_idx;
-    std::vector<bool> flags(m_pair_idx.size(), true);
-    for (int i = 0; i < temp.size(); ++i) {
-        for (int j = i + 1; j < temp.size(); ++j) {
-            if (temp[j].first == temp[i].first) {
-                flags[j] = false;
+    if(m_pair_idx.size() > 1){
+        std::vector<std::pair<int, TextChar> > temp = m_pair_idx;
+        std::vector<bool> flags(m_pair_idx.size(), true);
+        for (int i = 0; i < temp.size(); ++i) {
+            for (int j = i + 1; j < temp.size(); ++j) {
+                if (temp[j].first == temp[i].first) {
+                    flags[j] = false;
+                }
             }
         }
-    }
-    m_pair_idx.clear();
-    for (int i = 0; i < flags.size(); ++i){
-        if(flags[i]) {
-            m_pair_idx.push_back(temp[i]);
+        m_pair_idx.clear();
+        for (int i = 0; i < flags.size(); ++i){
+            if(flags[i]) {
+                m_pair_idx.push_back(temp[i]);
+            }
         }
+
+        std::sort(m_pair_idx.begin(), m_pair_idx.end(), compare_box_x);
     }
-    
-   std::sort(m_pair_idx.begin(), m_pair_idx.end(), compare_box_x);
    m_start = m_pair_idx[0].first;
    m_end = m_pair_idx[m_pair_idx.size() - 1].first;
+
    if (m_start == m_end) {
        m_isolate = true;
    } else {
@@ -131,8 +134,9 @@ void TextLine::vis_pairs(const std::vector<TextPair>& pairs){
             cv::rectangle(vis_im, m_boxes[kid].m_box, color);
         }
         cv::rectangle(vis_im, m_boxes[id].m_box, cv::Scalar(255, 0, 0));
+        std::string prefix = get_name_prefix(m_image_name);
         char savename[128];
-        sprintf(savename,"result_%d.jpg", i);
+        sprintf(savename,"%s/%s_%d.jpg", m_save_dir.c_str(), prefix.c_str(), i);
         cv::imwrite(savename, vis_im);
     }
 }
@@ -140,22 +144,23 @@ void TextLine::vis_pairs(const std::vector<TextPair>& pairs){
 
 void TextLine::gen_text_pairs() {
     cv::Mat centers = char_centers_to_mat(m_boxes);
-    int knn_num = 5;// nearest neightbour num for each char box
+    int knn_num = std::min(5, centers.rows);// nearest neightbour num for each char box
     cv::flann::KDTreeIndexParams indexParams(5);
     cv::flann::Index kdtree(centers, indexParams); //kdtree is fast, but it initiated with random seeds, take care.
     cv::Mat indices;
     cv::Mat dists;
     kdtree.knnSearch(centers, indices, dists, knn_num, cv::flann::SearchParams(64));
+    std::cout << indices << std::endl;
     eliminate_unvalid_pair(centers, dists, indices);
-    //std::cout << indices << std::endl;
+    std::cout << "eliminate done " << centers.rows << std::endl;
     //std::cout << dists << std::endl;
-
 }
 
 void TextLine::eliminate_unvalid_pair(const cv::Mat& centers,
                                       const cv::Mat& dists,
                                       const cv::Mat& indices) {
    //eliminate left / top neighbors
+    std::cout << "boxes num: " << centers.rows << std::endl;
      for (int i = 0; i < centers.rows; ++i) {
         TextPair tp;
         std::vector<unsigned int> indexs;
@@ -166,20 +171,22 @@ void TextLine::eliminate_unvalid_pair(const cv::Mat& centers,
             int kid = indices.at<int>(i, j);
             float center_dist_ratio = pt_dist / (0.5 * m_boxes[i].m_box.width + 0.5 *  m_boxes[kid].m_box.width);
             if (center_dist_ratio <= 1.5f){
-                indexs.push_back(kid);
                 cv::Point2f pt1(centers.at<float>(i, 0), centers.at<float>(i, 1));
                 cv::Point2f pt2(centers.at<float>(kid, 0), centers.at<float>(kid, 1));
                 float angle = compute_pts_angle(pt1, pt2);
-                angles.push_back(angle);
+                if (-45 <= angle && angle <= 45){
+                    angles.push_back(angle);
+                    indexs.push_back(kid);
+                }
             }
         }
-
         tp.m_pair_idx.push_back(std::pair<int, TextChar>(i, m_boxes[i]));
-        tp.m_pair_idx.push_back(std::pair<int, TextChar>(indexs[0], m_boxes[indexs[0]]));
-
-        for (int j = 1; j < indexs.size(); ++j) {
-            if (std::fabs(angles[j] - angles[0]) <= 15.0f) {
-                tp.m_pair_idx.push_back(std::pair<int, TextChar>(indexs[j], m_boxes[indexs[j]]));
+        if (indexs.size() > 0) {
+            tp.m_pair_idx.push_back(std::pair<int, TextChar>(indexs[0], m_boxes[indexs[0]]));
+            for (int j = 1; j < indexs.size(); ++j) {
+                if (std::fabs(angles[j] - angles[0]) <= 15.0f) {
+                    tp.m_pair_idx.push_back(std::pair<int, TextChar>(indexs[j], m_boxes[indexs[j]]));
+                }
             }
         }
         tp.sort_pairs_idx();
@@ -203,7 +210,13 @@ void TextLine::merge_text_pairs(){
                 if(!flags[j]) {
                     continue;
                 }
-                if (is_two_boxes_close(m_boxes[tp.m_end], m_boxes[m_pairs[j].m_start])) {
+                /*
+                if (!is_two_pairs_same_angle(tp, m_pairs[j])) {
+                    continue;
+                }
+                */
+                if (is_two_boxes_close(m_boxes[tp.m_end], m_boxes[m_pairs[j].m_start])
+                    && is_two_pairs_same_angle(tp, m_pairs[j])) {
                     tp.m_pair_idx.insert(tp.m_pair_idx.end(), m_pairs[j].m_pair_idx.begin(), m_pairs[j].m_pair_idx.end());
                     flags[j] = false;
                     is_merge = true;

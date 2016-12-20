@@ -23,6 +23,19 @@ std::vector<std::string> get_filelist(const std::string& dir_name) {
     return filename_v;
 }
 
+std::string get_name_prefix(const std::string& name) {
+    size_t dot_pos = name.rfind(".");
+    if (dot_pos == std::string::npos) {
+        dot_pos = name.length();
+    }
+    size_t slash_pos = name.rfind("/");
+    if (slash_pos == std::string::npos) {
+        slash_pos = 0;
+    }
+    std::string prefix = name.substr(slash_pos, dot_pos - slash_pos);
+    return prefix;
+}
+
 std::vector<TextChar>  load_boxes_from_file(const std::string& filepath) {
     std::vector<TextChar> boxes;
     std::ifstream infile;
@@ -86,5 +99,34 @@ bool is_two_boxes_close(const TextChar& left, const TextChar& right) {
 //  float dist = right.m_box.x - left.m_box.x - left.m_box.width + 1;
     float thresh = 0.5 * std::min(left.m_box.width, right.m_box.width);
     return dist<=thresh?true:false;
+}
+
+bool is_two_pairs_same_angle(const TextPair& p1, const TextPair& p2) {
+    float delta1 = 0;
+    float meany1 = 0;
+    cv::Point2f p1_start_center = p1.m_pair_idx[0].second.m_center;
+    for (int i = 0; i < p1.m_pair_idx.size(); ++i) {
+        cv::Point2f p1_center = p1.m_pair_idx[1].second.m_center;
+        meany1 += p1_center.y;
+        //delta1 += std::fabs(p1_center.y - p1_start_center.y); 
+    }
+    meany1 = meany1 / p1.m_pair_idx.size();
+
+    float delta2 = std::fabs(p2.m_pair_idx[0].second.m_center.y - p1_start_center.y);
+    float meany2 = 0;
+    for (int i = 0; i < p2.m_pair_idx.size(); ++i) {
+        cv::Point2f p2_center = p2.m_pair_idx[i].second.m_center;
+        float temp = std::fabs(p2_center.y - p1_start_center.y);
+        if (delta2 > temp) {
+            delta2 = temp;
+        }
+        meany2 += p2_center.y;
+    }
+    meany2 = meany2 / p2.m_pair_idx.size();
+    if (std::fabs(meany2 - meany1) >= p1.m_pair_idx[0].second.m_box.height * 0.5) {
+        return false;
+    } else {
+        return true;
+    }
 }
 }
