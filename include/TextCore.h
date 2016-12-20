@@ -21,11 +21,11 @@ class TextChar {
     TextChar(const std::string& line, bool has_score);
     TextChar(const cv::Rect& rect, const float score);
     ~TextChar();
-    inline void get_center();
-    inline float get_area() const;
-    inline float get_inter(const TextChar& other);
-    inline float get_union(const TextChar& other);
-    inline float get_iou(const TextChar& other);
+    void get_center();
+    float get_area() const;
+    float get_inter(const TextChar& other) const;
+    float get_union(const TextChar& other) const;
+    float get_iou(const TextChar& other) const;
     void print() const;
 
     cv::Rect m_box;
@@ -58,6 +58,7 @@ class TextLine {
                                           const cv::Mat& indices);
     void merge_text_pairs();
     void gen_initial_lines();
+    void merge_initial_lines();
     void gen_final_lines();
 
     void vis_pairs(const std::vector<TextPair>& pairs); 

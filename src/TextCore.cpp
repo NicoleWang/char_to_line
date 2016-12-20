@@ -32,16 +32,16 @@ TextChar::TextChar(const cv::Rect& rect, const float score) {
     get_center();
 }
 
-void TextChar::get_center() {
+inline void TextChar::get_center() {
     m_center.x = m_box.x + 0.5f * m_box.width;
     m_center.y = m_box.y + 0.5f * m_box.height;
 }
 
-float TextChar::get_area() const{
+inline float TextChar::get_area() const{
     return 1.0 * m_box.width * m_box.height;
 }
 
-float TextChar::get_inter(const TextChar& other) {
+inline float TextChar::get_inter(const TextChar& other) const{
     float xstart = std::max(m_box.x, other.m_box.x);
     float xend = std::min(m_box.x + m_box.width - 1,
                           other.m_box.x + other.m_box.width - 1);
@@ -56,15 +56,18 @@ float TextChar::get_inter(const TextChar& other) {
     return (delta_x * delta_y);
 }
 
-float TextChar::get_iou(const TextChar& other) {
+float TextChar::get_iou(const TextChar& other) const{
     float area_self = get_area();
     float area_other = other.get_area();
     float area_inter = get_inter(other);
+    float base_area = (m_score > other.m_score)?area_self:area_other;
 
-    return (1.0f * area_inter / (area_self + area_other - area_inter));
+    return (1.0f * area_inter / area_self);
+    //return (1.0f * area_inter / base_area);
+    //return (1.0f * area_inter / (area_self + area_other - area_inter));
 }
  
-void TextChar::print() const {
+inline void TextChar::print() const {
     std::cout << m_box.x << " " << m_box.y << " "
               << m_box.width << " " << m_box.height << std::endl;
 }
@@ -187,7 +190,7 @@ void TextLine::eliminate_unvalid_pair(const cv::Mat& centers,
                 cv::Point2f pt1(centers.at<float>(i, 0), centers.at<float>(i, 1));
                 cv::Point2f pt2(centers.at<float>(kid, 0), centers.at<float>(kid, 1));
                 float angle = compute_pts_angle(pt1, pt2);
-                if (-45 <= angle && angle <= 45){
+                if (-30 <= angle && angle <= 30){
                     angles.push_back(angle);
                     indexs.push_back(kid);
                 }
@@ -278,6 +281,47 @@ void TextLine::gen_initial_lines() {
         line.height = static_cast<int>(lineb - liney + 1);
         m_initial_lines.push_back(line);
     }
+}
+
+void TextLine::merge_initial_lines() {
+    std::vector<bool> is_merged(m_initial_lines.size(), false);
+    std::vector<cv::Rect> temp;
+    int line_num = 0;
+    for(unsigned int i = 0; i < m_initial_lines.size(); ++i) {
+        if(is_merged[i]) {
+            continue;
+        }
+        cv::Rect cur_rect = m_initial_lines[i];
+        bool is_continue = true;
+        while(is_continue) {
+            int cnt = 0;
+            for (unsigned int j =  0; j < m_initial_lines.size(); ++j) {
+                if (is_merged[j]) {
+                    continue;
+                }
+                if(merge_two_line_rect(cur_rect, m_initial_lines[j])) {
+                    is_merged[j] = true;
+                    cnt++;
+                }
+            }
+            if (cnt == 0) {
+                is_continue = false;
+            }
+        }
+        line_num++;
+        temp.push_back(cur_rect);
+    }
+    /*
+    std::vector<cv::Rect> temp(line_num);
+    int idx = 0;
+    for(unsigned int i = 0; i < m_initial_lines.size(); ++i){
+        if(!is_merged[i]) {
+            temp[idx] = m_initial_lines[i];
+                idx++;
+        }
+    }*/
+
+    m_initial_lines = temp;
 }
 
 }//end of namespace

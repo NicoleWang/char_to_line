@@ -58,6 +58,43 @@ std::vector<TextChar>  load_boxes_from_file(const std::string& filepath) {
     return boxes;
 }
 
+inline bool compare_char_score(const TextChar& c1, const TextChar& c2) {
+    return (c1.m_score > c2.m_score)?true:false;
+}
+
+std::vector<TextChar> nms_boxes(std::vector<TextChar>& boxes, float thresh) {
+    std::vector<bool> is_filtered(boxes.size(), false);
+    sort(boxes.begin(), boxes.end(), compare_char_score);
+    //std::vector<TextChar> nms_boxes;
+    int cnt = 0;
+    for(unsigned int i = 0; i < boxes.size(); ++i){
+        if (is_filtered[i]) {
+            continue;
+        }
+        cnt++;
+
+        for (unsigned int j = i + 1; j < boxes.size(); ++j) {
+            if (is_filtered[j]) {
+                continue;
+            }
+            float overlap = boxes[i].get_iou(boxes[j]);
+  //          std::cout << overlap << std::endl;
+            if (overlap >= thresh) {
+                is_filtered[j] = true;
+            }
+        }
+    }
+    std::vector<TextChar> out(cnt);
+    int idx = 0;
+    for(int i = 0; i < boxes.size(); ++i) {
+        if(!is_filtered[i]) {
+            out[idx] = boxes[i];
+            idx++;
+        }
+    }
+    return out;
+}
+
 void vis_boxes(cv::Mat& im, const std::vector<TextChar>& boxes) {
     for (unsigned int i = 0; i < boxes.size(); ++i) {
         cv::Point lt(boxes[i].m_box.x, boxes[i].m_box.y);
@@ -129,4 +166,24 @@ bool is_two_pairs_same_angle(const TextPair& p1, const TextPair& p2) {
         return true;
     }
 }
+
+bool merge_two_line_rect(cv::Rect& r1, cv::Rect& r2) {
+    bool res = false;
+    float h_dist = std::min(std::fabs(r1.x - r2.x - r2.width + 1), std::fabs(r2.x - r1.x - r1.width + 1));
+    float base_height = 0.5 * std::min(r1.height, r2.height);
+    float min_top = std::min(r1.y, r2.y);
+    float max_bot = std::max(r1.y + r1.height - 1, r2.y + r2.height - 1);
+    float size_ratio = 1.0 * (max_bot - min_top) / std::min(r1.height, r2.height);
+    if( size_ratio <= 1.5 && h_dist / base_height <= 0.5) {
+        res = true;
+        float left = std::min(r1.x, r2.x);
+        float top = std::min(r1.y, r2.y);
+        r1.width =  std::max(r1.x + r1.width, r2.x + r2.width) - left;
+        r1.height = std::max(r1.height, r2.height);
+        r1.x = left;
+        r1.y = top;
+    }
+    return res;
+}
+
 }
