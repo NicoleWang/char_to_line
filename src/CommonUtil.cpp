@@ -38,6 +38,7 @@ OLS<CType>::OLS() {
     m_a = 0.0;
     m_b = 0.0;
     m_pts.clear();
+    m_estimate_done = false;
 }
 
 template <class CType>
@@ -45,6 +46,7 @@ OLS<CType>::OLS(const std::vector<CType>& pts_in) {
     m_a = 0.0f;
     m_b = 0.0f;
     m_pts = pts_in;
+    m_estimate_done = false;
 }
 
 template <class CType>
@@ -73,6 +75,19 @@ bool OLS<CType>::do_OLS_estimation() {
     }
     m_a = 1.0f * (xi_xi_sum * yi_sum - xi_sum * xi_yi_sum) / (m_pts.size() * xi_xi_sum + xi_sum * xi_sum);
     m_b = 1.0f * (m_pts.size() * xi_yi_sum - xi_sum * yi_sum) / (m_pts.size() * xi_xi_sum - xi_sum * xi_sum);
+    m_estimate_done = true;
+    return true;
+}
+
+template <class CType>
+bool OLS<CType>::compute_y(float x, float& y) {
+    if (!m_estimate_done) {
+        if(!do_OLS_estimation()) {
+            return false;
+        }
+    }
+    y = m_a + m_b * x;
+    return true;
 }
 
 }//end of name space

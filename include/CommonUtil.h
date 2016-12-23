@@ -20,11 +20,10 @@ class OLS{
         OLS();
         OLS(const std::vector<CType>& pts_in);
         bool do_OLS_estimation();
-        inline float compute_y(float x) {
-            return (m_a + m_b * x);
-        }
+        inline bool compute_y(float x, float& res);
         void print_pts();
-        
+       
+        bool m_estimate_done;
         float m_a;
         float m_b;
         std::vector<CType> m_pts;
