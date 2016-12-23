@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include "CommonUtil.h"
 #include "TextCore.h"
 #include "TextUtil.h"
 
@@ -8,8 +9,8 @@ int main(int argc, char** argv) {
     std::string savedir= std::string(argv[3]);
     int image_num = atoi(argv[4]);
 
-    std::vector<std::string> filelist = text::get_filelist(dirpath);
-    std::vector<std::string> imglist = text::get_filelist(imgdir);
+    std::vector<std::string> filelist = common::get_filelist(dirpath);
+    std::vector<std::string> imglist = common::get_filelist(imgdir);
 
     for(unsigned int i = 0; i < filelist.size(); ++i) {
         if (image_num != i) {
