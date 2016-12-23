@@ -1,5 +1,6 @@
 #include <sstream>
 #include <algorithm>
+#include "CommonUtil.h"
 #include "TextCore.h"
 #include "TextUtil.h"
 
@@ -140,7 +141,7 @@ void TextLine::vis_pairs(const std::vector<TextPair>& pairs){
         cv::rectangle(vis_im, m_boxes[id].m_box, cv::Scalar(255, 0, 0));
         cv::rectangle(vis_im, m_boxes[end_id].m_box, cv::Scalar(255, 0, 0));
         cv::rectangle(vis_im, m_initial_lines[i], cv::Scalar(0, 255, 0));
-        std::string prefix = get_name_prefix(m_image_name);
+        std::string prefix = common::get_name_prefix(m_image_name);
         char savename[128];
         sprintf(savename,"%s/%s_%d.jpg", m_save_dir.c_str(), prefix.c_str(), i);
         cv::imwrite(savename, vis_im);
