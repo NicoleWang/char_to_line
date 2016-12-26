@@ -14,6 +14,27 @@
 #define EPSILON 0.0001
 #define KNN_NUM 5
 namespace text {
+enum TextDirection{
+    HOR_ONLY, //generate horizontal line only
+    VER_ONLY, //generate vertial line only
+    HOR_VER //generate both horizontal and vertical line, but always horizontal line first
+};
+
+struct TextPara{
+    TextPara() {
+        size_ratio_thresh = 0.0f;
+        dist_ratio_thresh = 0.0f;
+        self_angle_thresh = 0.0f;
+        merge_angle_thresh = 0.0f;
+    }
+
+    float size_ratio_thresh;
+    float dist_ratio_thresh;
+    float self_angle_thresh;
+    float merge_angle_thresh;
+
+
+};
 
 class TextChar {
     public:

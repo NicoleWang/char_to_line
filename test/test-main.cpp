@@ -13,9 +13,6 @@ int main(int argc, char** argv) {
     std::vector<std::string> imglist = common::get_filelist(imgdir);
 
     for(unsigned int i = 0; i < filelist.size(); ++i) {
-        if (image_num != i) {
-            //continue;
-        }
         std::cout << "Processing " << i << "th image: " << " " << imglist[i] << std::endl;
         std::string imagepath = imgdir + "/" + imglist[i];
         std::string filepath = dirpath + "/" + imglist[i] + ".txt";
