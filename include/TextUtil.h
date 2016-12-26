@@ -23,6 +23,8 @@ cv::Mat char_centers_to_mat(std::vector<TextChar>& boxes);
 float compute_pts_dist(const cv::Point2f& pt1, const cv::Point2f& pt2);
 float compute_pts_angle(const cv::Point2f& pt1, const cv::Point2f& pt2);
 bool compare_box_x(const std::pair<int, TextChar>& p1, const std::pair<int, TextChar>& p2);
+bool compare_box_y(const std::pair<int, TextChar>& p1, const std::pair<int, TextChar>& p2);
+bool compare_box(const std::pair<int, TextChar>& p1, const std::pair<int, TextChar>& p2);
 bool is_two_boxes_close(const TextChar& b1, const TextChar& b2);
 bool is_two_pairs_same_angle(const TextPair& p1, const TextPair& p2);
 bool merge_two_line_rect(cv::Rect& r1, cv::Rect& r2);

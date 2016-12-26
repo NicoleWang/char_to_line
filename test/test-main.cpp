@@ -21,13 +21,15 @@ int main(int argc, char** argv) {
         std::vector<text::TextChar> nms_boxes = text::nms_boxes(boxes, 0.7);
         cv::Mat centers = text::char_centers_to_mat(nms_boxes);
         text::TextLine line(img, nms_boxes);
+        line.m_direction = text::VER_ONLY;
         line.m_image_name = imglist[i];
         line.m_save_dir = savedir;
         line.gen_text_pairs();
-
         line.merge_text_pairs();
+
         line.gen_initial_lines();
         line.merge_initial_lines();
+
         line.vis_lines(line.m_initial_lines);
         //line.vis_pairs(line.m_final_pairs);
         //line.vis_pairs(line.m_pairs);

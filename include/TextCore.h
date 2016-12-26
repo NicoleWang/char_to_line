@@ -15,25 +15,16 @@
 #define KNN_NUM 5
 namespace text {
 enum TextDirection{
-    HOR_ONLY, //generate horizontal line only
-    VER_ONLY, //generate vertial line only
-    HOR_VER //generate both horizontal and vertical line, but always horizontal line first
+    HOR_ONLY,
+    VER_ONLY,
+    HOR_VER
 };
 
 struct TextPara{
-    TextPara() {
-        size_ratio_thresh = 0.0f;
-        dist_ratio_thresh = 0.0f;
-        self_angle_thresh = 0.0f;
-        merge_angle_thresh = 0.0f;
-    }
-
-    float size_ratio_thresh;
-    float dist_ratio_thresh;
+    float size_thresh;
+    float dist_thresh;
     float self_angle_thresh;
     float merge_angle_thresh;
-
-
 };
 
 class TextChar {
@@ -57,7 +48,7 @@ class TextChar {
 class TextPair {
     public:
     //TextPair(const unsigned int idx);
-    void sort_pairs_idx();
+    void sort_pairs_idx(const TextDirection& textdir);
     bool is_box_included(const TextPair& p);
     //void set_start_end();
     void print();
@@ -92,6 +83,10 @@ class TextLine {
     std::vector<TextPair> m_final_pairs;
     std::vector<cv::Rect> m_initial_lines;
     std::vector<cv::Rect> m_final_lines;
+
+    //paras
+    TextDirection m_direction;
+    TextPara m_para;
 };
 }//end of namespace text
 #endif

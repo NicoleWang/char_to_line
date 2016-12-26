@@ -85,8 +85,9 @@ bool TextPair::is_box_included(const TextPair& p) {
     return is_include;
 }
 
-void TextPair::sort_pairs_idx() {
+void TextPair::sort_pairs_idx(const TextDirection& textdir) {
     if(m_pair_idx.size() > 1){
+        //eliminate duplicate indexs first before sorting
         std::vector<std::pair<int, TextChar> > temp = m_pair_idx;
         std::vector<bool> flags(m_pair_idx.size(), true);
         for (int i = 0; i < temp.size(); ++i) {
@@ -102,8 +103,11 @@ void TextPair::sort_pairs_idx() {
                 m_pair_idx.push_back(temp[i]);
             }
         }
-
-        std::sort(m_pair_idx.begin(), m_pair_idx.end(), compare_box_x);
+        if (VER_ONLY == textdir) {
+            std::sort(m_pair_idx.begin(), m_pair_idx.end(), compare_box_y);
+        } else if (HOR_ONLY == textdir) {
+            std::sort(m_pair_idx.begin(), m_pair_idx.end(), compare_box_x);
+        }
     }
    m_start = m_pair_idx[0].first;
    m_end = m_pair_idx[m_pair_idx.size() - 1].first;
@@ -140,7 +144,7 @@ void TextLine::vis_pairs(const std::vector<TextPair>& pairs){
         }
         cv::rectangle(vis_im, m_boxes[id].m_box, cv::Scalar(255, 0, 0));
         cv::rectangle(vis_im, m_boxes[end_id].m_box, cv::Scalar(255, 0, 0));
-        cv::rectangle(vis_im, m_initial_lines[i], cv::Scalar(0, 255, 0));
+        //cv::rectangle(vis_im, m_initial_lines[i], cv::Scalar(0, 255, 0));
         std::string prefix = common::get_name_prefix(m_image_name);
         char savename[128];
         sprintf(savename,"%s/%s_%d.jpg", m_save_dir.c_str(), prefix.c_str(), i);
@@ -160,9 +164,9 @@ void TextLine::vis_lines(const std::vector<cv::Rect>& lines) {
 }
 
 void TextLine::gen_text_pairs() {
-    cv::Mat centers = char_centers_to_mat(m_boxes);
+    cv::Mat centers = char_centers_to_mat(m_boxes);//each row of centers represents a center point of a char box
     int knn_num = std::min(5, centers.rows);// nearest neightbour num for each char box
-    cv::flann::KDTreeIndexParams indexParams(5);
+    cv::flann::KDTreeIndexParams indexParams(knn_num);
     cv::flann::Index kdtree(centers, indexParams); //kdtree is fast, but it initiated with random seeds, take care.
     cv::Mat indices;
     cv::Mat dists;
@@ -177,7 +181,7 @@ void TextLine::eliminate_unvalid_pair(const cv::Mat& centers,
                                       const cv::Mat& dists,
                                       const cv::Mat& indices) {
    //eliminate left / top neighbors
-    //std::cout << "boxes num: " << centers.rows << std::endl;
+    // std::cout << "boxes num: " << centers.rows << std::endl;
      for (int i = 0; i < centers.rows; ++i) {
         TextPair tp;
         std::vector<unsigned int> indexs;
@@ -191,9 +195,16 @@ void TextLine::eliminate_unvalid_pair(const cv::Mat& centers,
                 cv::Point2f pt1(centers.at<float>(i, 0), centers.at<float>(i, 1));
                 cv::Point2f pt2(centers.at<float>(kid, 0), centers.at<float>(kid, 1));
                 float angle = compute_pts_angle(pt1, pt2);
-                if (-30 <= angle && angle <= 30){
-                    angles.push_back(angle);
-                    indexs.push_back(kid);
+                if(VER_ONLY == m_direction) {
+                    if(-30 > angle || angle > 30) {
+                        angles.push_back(angle);
+                        indexs.push_back(kid);
+                    }
+                } else {
+                    if (-30 <= angle && angle <= 30){
+                        angles.push_back(angle);
+                        indexs.push_back(kid);
+                    }
                 }
             }
         }
@@ -206,7 +217,7 @@ void TextLine::eliminate_unvalid_pair(const cv::Mat& centers,
                 }
             }
         }
-        tp.sort_pairs_idx();
+        tp.sort_pairs_idx(m_direction);
         m_pairs.push_back(tp);
     }
 }
@@ -224,7 +235,7 @@ void TextLine::merge_text_pairs(){
             int merge_cnt = 0;
             for (unsigned int j = i + 1; j < m_pairs.size(); ++j) {
                 bool is_merge = false;
-                if((!flags[j])) {
+                if(!flags[j]) {
                     continue;
                 }
                 /*
@@ -250,7 +261,7 @@ void TextLine::merge_text_pairs(){
                     merge_cnt++;
                 }
                 if (is_merge) {
-                    tp.sort_pairs_idx();
+                    tp.sort_pairs_idx(m_direction);
                 }
             }
             if (merge_cnt == 0) {
@@ -264,7 +275,6 @@ void TextLine::merge_text_pairs(){
 
 void TextLine::gen_initial_lines() {
     for (unsigned int i = 0; i < m_final_pairs.size(); ++i) {
-        //m_final_pairs[i].sort_pairs_idx();
         cv::Rect line;
         int start_id = m_final_pairs[i].m_start;
         int end_id = m_final_pairs[i].m_end;

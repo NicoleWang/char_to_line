@@ -23,11 +23,13 @@ int main(int argc, char** argv) {
     text::TextLine line(img, nms_boxes);
     line.m_image_name = imglist[i];
     line.m_save_dir = savedir;
+    line.m_direction = text::HOR_ONLY;
     line.gen_text_pairs();
-
+    std::cout << "Gen text pairs done" << std::endl;
     line.merge_text_pairs();
     line.gen_initial_lines();
-    line.merge_initial_lines();
+    //line.merge_initial_lines();
     line.vis_lines(line.m_initial_lines);
+    //line.vis_pairs(line.m_final_pairs);
     return 0;
 }

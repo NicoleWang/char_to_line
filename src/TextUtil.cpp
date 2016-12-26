@@ -36,6 +36,12 @@ inline bool compare_char_score(const TextChar& c1, const TextChar& c2) {
 std::vector<TextChar> nms_boxes(std::vector<TextChar>& boxes, float thresh) {
     std::vector<bool> is_filtered(boxes.size(), false);
     sort(boxes.begin(), boxes.end(), compare_char_score);
+    //eliminate char boxes with small confidence
+    for (unsigned int i = 0; i < boxes.size(); ++i) {
+        if (boxes[i].m_score < 0.1f) {
+            is_filtered[i] = true;
+        }
+    }
     //std::vector<TextChar> nms_boxes;
     int cnt = 0;
     for(unsigned int i = 0; i < boxes.size(); ++i){
@@ -102,6 +108,10 @@ bool compare_box_x(const std::pair<int, TextChar>& p1, const std::pair<int, Text
     return (p1.second.m_box.x < p2.second.m_box.x)?true:false;
 }
 
+bool compare_box_y(const std::pair<int, TextChar>& p1, const std::pair<int, TextChar>& p2) {
+    //bool res = (p1.second.m_box.x <= p2.second.m_box.x)?true:false;
+    return (p1.second.m_box.y < p2.second.m_box.y)?true:false;
+}
 bool is_two_boxes_close(const TextChar& left, const TextChar& right) {
     float dist = compute_pts_dist(left.m_center, right.m_center);
 //  float dist = right.m_box.x - left.m_box.x - left.m_box.width + 1;
