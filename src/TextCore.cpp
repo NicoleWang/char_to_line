@@ -79,6 +79,7 @@ bool TextPair::is_box_included(const TextPair& p) {
         for (int j = 0; j < p.m_pair_idx.size(); ++j) {
             if(p.m_pair_idx[j].first == m_pair_idx[i].first){
                 is_include = true;
+                break;
             }
         }
     }
@@ -86,7 +87,7 @@ bool TextPair::is_box_included(const TextPair& p) {
 }
 
 void TextPair::sort_pairs_idx(const TextDirection& textdir) {
-    if(m_pair_idx.size() > 1){
+    if(m_pair_idx.size() > 1) {
         //eliminate duplicate indexs first before sorting
         std::vector<std::pair<int, TextChar> > temp = m_pair_idx;
         std::vector<bool> flags(m_pair_idx.size(), true);
@@ -97,6 +98,7 @@ void TextPair::sort_pairs_idx(const TextDirection& textdir) {
                 }
             }
         }
+
         m_pair_idx.clear();
         for (int i = 0; i < flags.size(); ++i){
             if(flags[i]) {
@@ -228,7 +230,6 @@ void TextLine::merge_text_pairs(){
         if(!flags[i]) {
             continue;
         }
-
         TextPair tp = m_pairs[i];
         bool merge_done = false;
         while(!merge_done) {
@@ -298,7 +299,7 @@ void TextLine::merge_initial_lines() {
     std::vector<bool> is_merged(m_initial_lines.size(), false);
     std::vector<cv::Rect> temp;
     int line_num = 0;
-    for(unsigned int i = 0; i < m_initial_lines.size(); ++i) {
+    for (unsigned int i = 0; i < m_initial_lines.size(); ++i) {
         if(is_merged[i]) {
             continue;
         }
