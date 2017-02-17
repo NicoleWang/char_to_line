@@ -1,0 +1,4 @@
+/home/wangyuzhuo/wangyuzhuo/char_to_line/build/CMakeFiles/DetectChar.dir
+/home/wangyuzhuo/wangyuzhuo/char_to_line/build/CMakeFiles/DetectLine.dir
+/home/wangyuzhuo/wangyuzhuo/char_to_line/build/CMakeFiles/DetectLine_d.dir
+/home/wangyuzhuo/wangyuzhuo/char_to_line/build/CMakeFiles/DetectLoadChar.dir

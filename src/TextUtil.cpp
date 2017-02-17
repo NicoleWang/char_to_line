@@ -5,8 +5,6 @@
 #include "TextUtil.h"
 
 namespace text{
-
-
 std::vector<TextChar>  load_boxes_from_file(const std::string& filepath) {
     std::vector<TextChar> boxes;
     std::ifstream infile;
@@ -20,8 +18,10 @@ std::vector<TextChar>  load_boxes_from_file(const std::string& filepath) {
             cv::Rect rect;
             float score = 0.0f;
             ss >> rect.x >> rect.y >> rect.width >> rect.height >> score;
-            rect.width = rect.width - rect.x + 1;
-            rect.height = rect.height - rect.y + 1;
+            //ss >> rect.x >> rect.y >> rect.width >> rect.height;
+
+            //rect.width = rect.width - rect.x + 1;
+            //rect.height = rect.height - rect.y + 1;
             boxes.push_back(TextChar(rect, score));
         }
     }
@@ -63,7 +63,7 @@ std::vector<TextChar> nms_boxes(std::vector<TextChar>& boxes, float thresh) {
     }
     std::vector<TextChar> out(cnt);
     int idx = 0;
-    for(int i = 0; i < boxes.size(); ++i) {
+    for(unsigned int i = 0; i < boxes.size(); ++i) {
         if(!is_filtered[i]) {
             out[idx] = boxes[i];
             idx++;
@@ -78,14 +78,14 @@ void vis_boxes(cv::Mat& im, const std::vector<TextChar>& boxes) {
         cv::Point rb(boxes[i].m_box.x + boxes[i].m_box.width - 1, 
                      boxes[i].m_box.y + boxes[i].m_box.height - 1);
         cv::rectangle(im, boxes[i].m_box, cv::Scalar(255, 0, 0));
-        cv::Rect rect = boxes[i].m_box;
+        //cv::Rect rect = boxes[i].m_box;
         //std::cout << rect.x << " " << rect.y << " " << rect.width << " " << rect.height << std::endl;
     }
 }
 
 cv::Mat char_centers_to_mat(std::vector<TextChar>& boxes) {
     cv::Mat box_mat(boxes.size(), 2, CV_32FC1);
-    for (int i = 0; i < boxes.size(); ++i) {
+    for (unsigned int i = 0; i < boxes.size(); ++i) {
         box_mat.at<float>(i, 0) = boxes[i].m_center.x;
         box_mat.at<float>(i, 1) = boxes[i].m_center.y;
     }
@@ -114,16 +114,26 @@ bool compare_box_y(const std::pair<int, TextChar>& p1, const std::pair<int, Text
 }
 bool is_two_boxes_close(const TextChar& left, const TextChar& right) {
     float dist = compute_pts_dist(left.m_center, right.m_center);
+    /*
+    float angle = compute_pts_angle(left.m_center, right.m_center);
+    float norm_dist = 0.0f;
+    if (fabs(angle) <= 45) {
+        norm_dist = std::fabs(dist * std::cos(angle));
+    } else {
+        norm_dist = std::fabs(dist * std::sin(angle));
+    }
+    */
 //  float dist = right.m_box.x - left.m_box.x - left.m_box.width + 1;
-    float thresh = 1.0 * std::min(left.m_box.width, right.m_box.width);
+    float thresh = 1 * std::min(left.m_box.width, right.m_box.width);
     return dist<=thresh?true:false;
+    //return norm_dist<=thresh?true:false;
 }
 
 bool is_two_pairs_same_angle(const TextPair& p1, const TextPair& p2) {
-    float delta1 = 0;
+//    float delta1 = 0;
     float meany1 = 0;
     cv::Point2f p1_start_center = p1.m_pair_idx[0].second.m_center;
-    for (int i = 0; i < p1.m_pair_idx.size(); ++i) {
+    for (unsigned int i = 0; i < p1.m_pair_idx.size(); ++i) {
         cv::Point2f p1_center = p1.m_pair_idx[1].second.m_center;
         meany1 += p1_center.y;
         //delta1 += std::fabs(p1_center.y - p1_start_center.y); 
@@ -132,7 +142,7 @@ bool is_two_pairs_same_angle(const TextPair& p1, const TextPair& p2) {
 
     float delta2 = std::fabs(p2.m_pair_idx[0].second.m_center.y - p1_start_center.y);
     float meany2 = 0;
-    for (int i = 0; i < p2.m_pair_idx.size(); ++i) {
+    for (unsigned int i = 0; i < p2.m_pair_idx.size(); ++i) {
         cv::Point2f p2_center = p2.m_pair_idx[i].second.m_center;
         float temp = std::fabs(p2_center.y - p1_start_center.y);
         if (delta2 > temp) {
@@ -141,10 +151,20 @@ bool is_two_pairs_same_angle(const TextPair& p1, const TextPair& p2) {
         meany2 += p2_center.y;
     }
     meany2 = meany2 / p2.m_pair_idx.size();
+
+    float angle1 = std::fabs(compute_pts_angle(p1.m_pair_idx[0].second.m_center, p1.m_pair_idx[p1.m_end].second.m_center));
+    float angle2 = std::fabs(compute_pts_angle(p2.m_pair_idx[0].second.m_center, p1.m_pair_idx[p1.m_end].second.m_center));
+    /*
     if (std::fabs(meany2 - meany1) >= p1.m_pair_idx[0].second.m_box.height * 0.5) {
         return false;
     } else {
         return true;
+    }
+    */
+    if (std::fabs(angle1 - angle2) < 15) {
+        return true;
+    } else {
+        return false;
     }
 }
 
@@ -155,7 +175,7 @@ bool merge_two_line_rect(cv::Rect& r1, cv::Rect& r2) {
     float min_top = std::min(r1.y, r2.y);
     float max_bot = std::max(r1.y + r1.height - 1, r2.y + r2.height - 1);
     float size_ratio = 1.0 * (max_bot - min_top) / std::min(r1.height, r2.height);
-    if( size_ratio <= 1.5 && h_dist / base_height <= 0.5) {
+    if( size_ratio <= 1.5 && h_dist / base_height <= 0.3) {
         res = true;
         float left = std::min(r1.x, r2.x);
         float top = std::min(r1.y, r2.y);

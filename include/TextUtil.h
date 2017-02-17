@@ -17,6 +17,7 @@ namespace text {
 std::vector<std::string> get_filelist(const std::string& dir_name);
 std::string get_name_prefix(const std::string& name);
 std::vector<TextChar>  load_boxes_from_file(const std::string& filepath);
+void check_chars_locs(const cv::Mat& img, std::vector<TextChar>& boxes);
 void vis_boxes(cv::Mat& im, const std::vector<TextChar>& boxes);
 std::vector<TextChar> nms_boxes(std::vector<TextChar>& boxes, float thresh);
 cv::Mat char_centers_to_mat(std::vector<TextChar>& boxes);

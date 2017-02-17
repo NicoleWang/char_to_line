@@ -32,62 +32,31 @@ std::string get_name_prefix(const std::string& name) {
     return prefix;
 }
 
-//Ordinary Least Square Estimation
-template <class CType>
-OLS<CType>::OLS() {
-    m_a = 0.0;
-    m_b = 0.0;
-    m_pts.clear();
-    m_estimate_done = false;
+bool compare_2fpts(const cv::Point2f& pt1, const cv::Point2f& pt2) {
+    return (pt1.x < pt2.x)?true:false;
 }
-
-template <class CType>
-OLS<CType>::OLS(const std::vector<CType>& pts_in) {
-    m_a = 0.0f;
-    m_b = 0.0f;
-    m_pts = pts_in;
-    m_estimate_done = false;
-}
-
-template <class CType>
-void OLS<CType>::print_pts() {
-    for (unsigned int i = 0; i < m_pts.size(); ++i) {
-        std::cout << m_pts[i].x << " " << m_pts[i].y << std::endl;
+void  find_four_pts_clockwise(cv::Point2f* pts) {
+    std::vector<cv::Point2f> out;
+    out.push_back(pts[0]);
+    out.push_back(pts[1]);
+    out.push_back(pts[2]);
+    out.push_back(pts[3]);
+    std::sort(out.begin(), out.end(), compare_2fpts);
+    std::vector<cv::Point2f> tmp = out;
+    if(out[0].y > out[1].y) {
+        pts[0] = tmp[1];
+        pts[3] = tmp[0];
+    } else {
+        pts[0] = tmp[0];
+        pts[3] = tmp[1];
     }
-}
-
-template <class CType>
-bool OLS<CType>::do_OLS_estimation() {
-    if (2 > m_pts.size()) {
-        //Need 2 points at least
-        return false;
+    if(out[2].y > out[3].y) {
+        pts[1] = tmp[3];
+        pts[2] = tmp[2];
+    } else {
+        pts[1] = tmp[2];
+        pts[2] = tmp[3];
     }
-
-    float xi_xi_sum = 0.0f;
-    float xi_sum = 0.0f;
-    float xi_yi_sum = 0.0f;
-    float yi_sum = 0.0f;
-    for (unsigned int i = 0; i < m_pts.size(); ++i) {
-        xi_xi_sum += (m_pts[i].x * m_pts[i].x);
-        xi_sum += m_pts[i].x;
-        xi_yi_sum += (m_pts[i].x * m_pts[i].y);
-        yi_sum += m_pts[i].y;
-    }
-    m_a = 1.0f * (xi_xi_sum * yi_sum - xi_sum * xi_yi_sum) / (m_pts.size() * xi_xi_sum + xi_sum * xi_sum);
-    m_b = 1.0f * (m_pts.size() * xi_yi_sum - xi_sum * yi_sum) / (m_pts.size() * xi_xi_sum - xi_sum * xi_sum);
-    m_estimate_done = true;
-    return true;
-}
-
-template <class CType>
-bool OLS<CType>::compute_y(float x, float& y) {
-    if (!m_estimate_done) {
-        if(!do_OLS_estimation()) {
-            return false;
-        }
-    }
-    y = m_a + m_b * x;
-    return true;
 }
 
 }//end of name space

@@ -4,14 +4,10 @@
 #include "TextUtil.h"
 
 int main(int argc, char** argv) {
-    if (argc != 4) {
-        std::cout << "Usage: ./test-main imgdir chardir savedir" << std::endl;
-        return 0;
-    }
     std::string imgdir = std::string(argv[1]);
     std::string dirpath = std::string(argv[2]);
     std::string savedir= std::string(argv[3]);
-    //int image_num = atoi(argv[4]);
+    int image_num = atoi(argv[4]);
 
     std::vector<std::string> filelist = common::get_filelist(dirpath);
     std::vector<std::string> imglist = common::get_filelist(imgdir);
