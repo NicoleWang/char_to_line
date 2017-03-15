@@ -16,7 +16,7 @@ namespace caffe {
 namespace text{
 struct DetectParams{
     DetectParams() {
-        m_device_id = 0;
+        m_device_id = 1;
     }
     DetectParams(int device_id) {
         m_device_id = device_id;

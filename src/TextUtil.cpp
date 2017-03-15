@@ -20,8 +20,8 @@ std::vector<TextChar>  load_boxes_from_file(const std::string& filepath) {
             ss >> rect.x >> rect.y >> rect.width >> rect.height >> score;
             //ss >> rect.x >> rect.y >> rect.width >> rect.height;
 
-            //rect.width = rect.width - rect.x + 1;
-            //rect.height = rect.height - rect.y + 1;
+            rect.width = rect.width - rect.x + 1;
+            rect.height = rect.height - rect.y + 1;
             boxes.push_back(TextChar(rect, score));
         }
     }
@@ -38,7 +38,7 @@ std::vector<TextChar> nms_boxes(std::vector<TextChar>& boxes, float thresh) {
     sort(boxes.begin(), boxes.end(), compare_char_score);
     //eliminate char boxes with small confidence
     for (unsigned int i = 0; i < boxes.size(); ++i) {
-        if (boxes[i].m_score < 0.1f) {
+        if (boxes[i].m_score < 0.3f) {
             is_filtered[i] = true;
         }
     }

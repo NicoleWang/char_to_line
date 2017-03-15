@@ -542,7 +542,8 @@ void TextLine::crop_and_rotate_lines(std::vector<cv::Mat>& outs, std::vector< st
             cv::rectangle(rotated, line_chars[j], cv::Scalar(255, 0, 0));
         }
         */
-        sprintf(savename,"%s/%s_line%d.jpg", m_save_dir.c_str(), prefix.c_str(), i);
+        cv::Rect tt_rect = m_initial_lines[i];
+        sprintf(savename,"%s/%s_%d_%d_%d_%d_%d.jpg", m_save_dir.c_str(), prefix.c_str(), i, tt_rect.x, tt_rect.y, tt_rect.x + tt_rect.width - 1, tt_rect.y + tt_rect.height -1);
         cv::imwrite(savename, rotated);
 #endif
         //m_final_pairs[i].do_ols();

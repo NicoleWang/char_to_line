@@ -26,7 +26,7 @@ int main(int argc, char** argv) {
   for(unsigned int i = 0; i < imglist.size(); ++i) {
       std::cout << "Processing " << i << "th image: " << " " << imglist[i] << std::endl;
       std::string imagepath = imgdir + "/" + imglist[i];
-      cv::Mat img = cv::imread(imagepath);
+      cv::Mat img = cv::imread(imagepath, 1);
       //CHECK(!img.empty()) << "Unable to decode image" << imagepath;
       std::vector<cv::Mat> LineImgs;
       std::vector<cv::Mat> LineBins;

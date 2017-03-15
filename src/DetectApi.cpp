@@ -73,7 +73,7 @@ int GetTextLine(const cv::Mat& img,
       line.merge_initial_lines();
       std::vector< std::vector<cv::Rect> > temp_char_pos;
       line.get_all_rotated_lines();
-      /*
+      
       line.crop_and_rotate_lines(LineImgs, temp_char_pos);
 
       for(unsigned int i = 0; i < LineImgs.size(); ++i) {
@@ -88,9 +88,9 @@ int GetTextLine(const cv::Mat& img,
           cv::Point pt(line.m_initial_lines[i].x, line.m_initial_lines[i].y);
           offsetPts.push_back(pt);
       }
-      */
+      
       //line.vis_rotated_lines(line.m_rotated_lines);
-      line.vis_lines(line.m_initial_lines);
+      //line.vis_lines(line.m_initial_lines);
       std::fstream fn;
       std::string file_path;
       file_path = save_dir + "/" + image_name + ".txt";
@@ -98,8 +98,8 @@ int GetTextLine(const cv::Mat& img,
       for (unsigned int i = 0; i < line.m_initial_lines.size(); ++i) {
           fn << line.m_initial_lines[i].x << "\t" 
              << line.m_initial_lines[i].y << "\t"
-             << line.m_initial_lines[i].width << "\t"
-             << line.m_initial_lines[i].height << std::endl;
+             << line.m_initial_lines[i].x + line.m_initial_lines[i].width - 1<< "\t"
+             << line.m_initial_lines[i].y + line.m_initial_lines[i].height - 1<< std::endl;
       }
       fn.close();
       //line.vis_pairs(line.m_pairs);
@@ -121,7 +121,7 @@ int GetTextLine(const cv::Mat& img,
       //line generation
       caffe::TransBox2TextChar(dets, chars);
       std::cout << "Detect " << chars.size() << " chars " << std::endl;
-      std::vector<text::TextChar> nms_boxes = text::nms_boxes(chars, 0.3);
+      std::vector<text::TextChar> nms_boxes = text::nms_boxes(chars, 0.5);
       text::TextLine line(img, nms_boxes);
 #if 0
       cv::Mat vis_im = img.clone();
@@ -140,6 +140,7 @@ int GetTextLine(const cv::Mat& img,
       line.merge_initial_lines();
       std::vector< std::vector<cv::Rect> > temp_char_pos;
       line.get_all_rotated_lines();
+      /*
       line.crop_and_rotate_lines(LineImgs, temp_char_pos);
 
       for(unsigned int i = 0; i < LineImgs.size(); ++i) {
@@ -154,6 +155,8 @@ int GetTextLine(const cv::Mat& img,
           cv::Point pt(line.m_initial_lines[i].x, line.m_initial_lines[i].y);
           offsetPts.push_back(pt);
       }
+      */
+
       line.vis_rotated_lines(line.m_rotated_lines);
       //line.vis_lines(line.m_initial_lines);
       //line.vis_pairs(line.m_pairs);

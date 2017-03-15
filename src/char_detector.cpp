@@ -83,6 +83,7 @@ Detector::Detector(const string& model_file,
 #endif
 
     /* load trained caffe model */
+    //net_.reset(new Net<float>(model_file, TEST, 0, NULL, NULL));
     net_.reset(new Net<float>(model_file, TEST));
     net_->CopyTrainedLayersFrom(weights_file);
     //printf("Net has %d inputs and %d outputs\n", net_->num_inputs(), net_->num_outputs());
@@ -271,7 +272,8 @@ void  Detector::Detect(const cv::Mat& img, std::vector<Box>& final_dets) {
 
     std::vector<cv::Mat> input_channels;
     WrapInputLayer(&input_channels, post_img);
-    net_->ForwardPrefilled();
+    //net_->ForwardPrefilled();
+    net_->Forward();
 
     const shared_ptr<Blob<float> > rois_blob = net_->blob_by_name("rois");
 
