@@ -20,6 +20,7 @@ int main(int argc, char** argv) {
   std::vector<std::string> imglist = common::get_filelist(imgdir);
   text::DetectParams detParams;
   caffe::Detector*  detector = text::Init(model_file, trained_file, detParams);
+  //caffe::Detector*  new_detector = text::Init(model_file, *detector, detParams);
   //process image one by one
   //std::ifstream infile(argv[3]);
   //std::string imagepath;
@@ -31,9 +32,11 @@ int main(int argc, char** argv) {
       std::vector<cv::Mat> LineImgs;
       std::vector<cv::Mat> LineBins;
       std::vector<cv::Point> offsets;
-
+      std::vector< std::vector<cv::Rect> > char_pos;
+      //text::GetTextLine(img, new_detector, LineImgs, LineBins, offsets, savedir, imglist[i]);
       text::GetTextLine(img, detector, LineImgs, LineBins, offsets, savedir, imglist[i]);
-     // std::cout<< "Line image num: " << LineImgs.size() << " Line bins size: " << LineBins.size() << std::endl;
+      //text::GetTextLine(img, detector, LineImgs, LineBins, offsets, char_pos);
+      //std::cout<< "Line image num: " << LineImgs.size() << " Line bins size: " << LineBins.size() << std::endl;
 
 #if 0
       std::vector<Box> dets;

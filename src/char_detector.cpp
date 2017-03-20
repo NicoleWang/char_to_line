@@ -84,7 +84,8 @@ Detector::Detector(const string& model_file,
 
     /* load trained caffe model */
     //net_.reset(new Net<float>(model_file, TEST, 0, NULL, NULL));
-    net_.reset(new Net<float>(model_file, TEST));
+    //net_->reset(new Net<float>(model_file, TEST));
+    net_ = new Net<float>(model_file, TEST);
     net_->CopyTrainedLayersFrom(weights_file);
     //printf("Net has %d inputs and %d outputs\n", net_->num_inputs(), net_->num_outputs());
     CHECK_EQ(net_->num_inputs(), 2) << "Network should have exactly two inputs (image data and image info)";
@@ -100,6 +101,36 @@ Detector::Detector(const string& model_file,
     //std::cout<< "input 1: " << input_image->shape_string() << std::endl;
     //std::cout<< "input 2: " << input_info->shape_string() << std::endl;
 }
+
+Detector::Detector(const string& model_file,
+                   const caffe::Net<float>* other_net,
+                   const int gpu_id) {
+#ifdef CPU_ONLY
+    Caffe::set_mode(Caffe::CPU);
+#else 
+    Caffe::set_mode(Caffe::GPU);
+    Caffe::SetDevice(gpu_id);
+#endif
+
+    /* copy layer weights  from other inited Net variable */
+    //net_->reset(new Net<float>(model_file, TEST));
+    net_ = new Net<float>(model_file, TEST);
+    net_->ShareTrainedLayersWith(other_net);
+    //printf("Net has %d inputs and %d outputs\n", net_->num_inputs(), net_->num_outputs());
+    CHECK_EQ(net_->num_inputs(), 2) << "Network should have exactly two inputs (image data and image info)";
+    CHECK_EQ(net_->num_outputs(), 2) << "Network should have exactly two outputs (scores and pred_boxes).";
+
+    mean_ = cv::Scalar(102.9801, 115.9465, 122.7717);
+    target_size_ = 600;
+    max_size_ = 1000;
+
+    Blob<float>* input_image = net_->input_blobs()[0];
+    num_channels_ = input_image->channels();
+    CHECK(num_channels_ == 3) << "Imput image must have 3 channels" ;
+    //std::cout<< "input 1: " << input_image->shape_string() << std::endl;
+    //std::cout<< "input 2: " << input_info->shape_string() << std::endl;
+}
+
 
 /* Wrap the input layer of the network in separate cv::Mat objects
  * (one per channel). This way we save one memcpy operation and we
@@ -157,8 +188,11 @@ void Detector::Preprocess(const cv::Mat& img, cv::Mat& out_img) {
     cv::resize(sample, resized_img, dst_size);
 
     /* substract mean value */
-    resized_img -= mean_;
-    out_img = resized_img.clone();
+    cv::Mat temp;
+    resized_img.convertTo(temp, CV_32FC3);
+    temp -= mean_;
+
+    out_img = temp.clone();
 
     /* convert input image information to the input format of the network */
     Blob<float>* input_info = net_->input_blobs()[1];

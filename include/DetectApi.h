@@ -16,7 +16,7 @@ namespace caffe {
 namespace text{
 struct DetectParams{
     DetectParams() {
-        m_device_id = 1;
+        m_device_id = 2;
     }
     DetectParams(int device_id) {
         m_device_id = device_id;
@@ -25,6 +25,7 @@ struct DetectParams{
 };
 
 caffe::Detector* Init(const std::string& proto_path, const std::string& model_path, const DetectParams& detParams);
+caffe::Detector* Init(const std::string& proto_path, caffe::Detector& other, const DetectParams& detParams);
 void Release(caffe::Detector*& detector);
 int GetTextLine(const cv::Mat& img,
                 caffe::Detector* detector,

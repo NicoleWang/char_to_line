@@ -33,11 +33,25 @@ void TransBox2TextChar(const std::vector<Box>& in, std::vector<text::TextChar>& 
 
 class Detector {
  public:
+  //copy weights from trained model
   Detector(const string& model_file,
            const string& weights_file,
            const int gpu_id);
+  //copy weights from other inited net variable
+  Detector(const string& model_file,
+           const caffe::Net<float>* other_net,
+           const int gpu_id);
+  ~Detector() {
+      if (NULL != net_) {
+          delete net_;
+          net_ = NULL;
+      }
+  }
   //std::vector<vector<float> > Detect(const cv::Mat& img);
   void Detect(const cv::Mat& img, std::vector<Box>& final_dets);
+  caffe::Net<float>* get_net() {
+      return net_;
+  }
 
  private:
 //  void SetMean();
@@ -50,7 +64,7 @@ class Detector {
                        std::vector<float>& out_scores);
 
  private:
-  shared_ptr<Net<float> > net_;
+  caffe::Net<float>* net_;
   cv::Size input_geometry_;
   int num_channels_;
   unsigned int target_size_;

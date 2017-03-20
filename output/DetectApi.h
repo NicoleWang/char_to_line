@@ -14,24 +14,25 @@ namespace caffe {
 }
 //using namespace caffe;
 namespace text{
- /*
-struct DetectModel{
-    DetectModel(const std::string& proto_path, const std::string& model_path) {
-        m_proto_path = proto_path;
-        m_model_path = model_path;
+struct DetectParams{
+    DetectParams() {
+        m_device_id = 1;
     }
-    std::string m_proto_path;
-    std::string m_model_path;
+    DetectParams(int device_id) {
+        m_device_id = device_id;
+    }
+    int m_device_id;
 };
-*/
 
-caffe::Detector* Init(const std::string& proto_path, const std::string& model_path);
+caffe::Detector* Init(const std::string& proto_path, const std::string& model_path, const DetectParams& detParams);
+caffe::Detector* Init(const std::string& proto_path, caffe::Detector& other, const DetectParams& detParams);
 void Release(caffe::Detector*& detector);
 int GetTextLine(const cv::Mat& img,
                 caffe::Detector* detector,
                 std::vector<cv::Mat>& LineImgs, 
                 std::vector<cv::Mat>& LineBins,
-                std::vector<cv::Point>& offsetPts);
+                std::vector<cv::Point>& offsetPts, 
+                std::vector< std::vector<cv::Rect> >& char_pos);
 int GetTextLine(const cv::Mat& img,
                 caffe::Detector* detector,
                 std::vector<cv::Mat>& LineImgs, 
@@ -39,6 +40,15 @@ int GetTextLine(const cv::Mat& img,
                 std::vector<cv::Point>& offsetPts,
                 const std::string& save_dir,
                 const std::string& image_name);
+int GetTextLine(const cv::Mat& img,
+                std::vector<cv::Mat>& LineImgs, 
+                std::vector<cv::Mat>& LineBins,
+                std::vector<cv::Point>& offsetPts,
+                const std::string& chars_dir,
+                const std::string& save_dir,
+                const std::string& image_name);
+
+
 }//end of namespace
 
 #endif

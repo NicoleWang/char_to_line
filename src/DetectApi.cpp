@@ -7,6 +7,12 @@ caffe::Detector* Init(const std::string& proto_path, const std::string& model_pa
     caffe::Detector* detector = new caffe::Detector(proto_path, model_path, detParams.m_device_id);
     return detector;
 }
+
+caffe::Detector* Init(const std::string& proto_path, caffe::Detector& other, const DetectParams& detParams) {
+    caffe::Net<float>* other_net = other.get_net();
+    caffe::Detector* detector = new caffe::Detector(proto_path, other_net, detParams.m_device_id);
+    return detector;
+}
 void Release(caffe::Detector*& detector) {
     if (NULL != detector) {
         delete detector;
@@ -123,12 +129,13 @@ int GetTextLine(const cv::Mat& img,
       std::cout << "Detect " << chars.size() << " chars " << std::endl;
       std::vector<text::TextChar> nms_boxes = text::nms_boxes(chars, 0.5);
       text::TextLine line(img, nms_boxes);
-#if 0
+#if 1
       cv::Mat vis_im = img.clone();
       vis_boxes(vis_im, nms_boxes);
       char save_name[256];
       sprintf(save_name, "%s/char_%s", save_dir.c_str(), image_name.c_str());
       imwrite(save_name, vis_im);
+      std::cout << "Come here" << std::endl;
 #endif
       line.m_direction = text::HOR_ONLY;
       line.m_image_name = image_name;
@@ -176,14 +183,14 @@ int GetTextLine(const cv::Mat& img,
       std::vector<text::TextChar> chars;
       //line generation
       caffe::TransBox2TextChar(dets, chars);
-//      std::cout << "Detect " << chars.size() << " chars " << std::endl;
+      std::cout << "Detect " << chars.size() << " chars " << std::endl;
       std::vector<text::TextChar> nms_boxes = text::nms_boxes(chars, 0.3);
       text::TextLine line(img, nms_boxes);
       line.m_direction = text::HOR_ONLY;
       //line.m_image_name = imglist[i];
       //line.m_save_dir = savedir;
       line.gen_text_pairs();
-      //std::cout << "Gen text pairs done " << line.m_pairs.size() << " pairs" << std::endl;
+      std::cout << "Gen text pairs done " << line.m_pairs.size() << " pairs" << std::endl;
       line.merge_text_pairs();
       line.gen_initial_lines();
       line.merge_initial_lines();
