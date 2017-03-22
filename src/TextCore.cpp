@@ -301,8 +301,9 @@ void TextLine::merge_text_pairs(){
                     is_merge = true;
                     merge_cnt++;
                 } else */
-                    if (is_two_boxes_close(m_boxes[tp.m_end], m_boxes[m_pairs[j].m_start])
+                if (is_two_boxes_close(m_boxes[tp.m_end], m_boxes[m_pairs[j].m_start])
                     && is_two_pairs_same_angle(tp, m_pairs[j])) {
+
                     tp.m_pair_idx.insert(tp.m_pair_idx.end(), m_pairs[j].m_pair_idx.begin(), m_pairs[j].m_pair_idx.end());
                     flags[j] = false;
                     is_merge = true;

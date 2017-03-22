@@ -3,6 +3,7 @@
 #include "TextUtil.h"
 #include <fstream>
 namespace text {
+pthread_mutex_t det_mutex = PTHREAD_MUTEX_INITIALIZER;
 caffe::Detector* Init(const std::string& proto_path, const std::string& model_path, const DetectParams& detParams) {
     caffe::Detector* detector = new caffe::Detector(proto_path, model_path, detParams.m_device_id);
     return detector;
@@ -113,7 +114,6 @@ int GetTextLine(const cv::Mat& img,
       return 0;
 }
 
-
 int GetTextLine(const cv::Mat& img,
                 caffe::Detector* detector,
                 std::vector<cv::Mat>& LineImgs, 
@@ -179,18 +179,21 @@ int GetTextLine(const cv::Mat& img,
                 std::vector< std::vector<cv::Rect> >& char_pos) {
 
       std::vector<caffe::Box> dets;
+      pthread_mutex_lock(&det_mutex);
       detector->Detect(img, dets);
+      pthread_mutex_unlock(&det_mutex);
+
       std::vector<text::TextChar> chars;
       //line generation
       caffe::TransBox2TextChar(dets, chars);
-      std::cout << "Detect " << chars.size() << " chars " << std::endl;
+      //std::cout << "Detect " << chars.size() << " chars " << std::endl;
       std::vector<text::TextChar> nms_boxes = text::nms_boxes(chars, 0.3);
       text::TextLine line(img, nms_boxes);
       line.m_direction = text::HOR_ONLY;
       //line.m_image_name = imglist[i];
       //line.m_save_dir = savedir;
       line.gen_text_pairs();
-      std::cout << "Gen text pairs done " << line.m_pairs.size() << " pairs" << std::endl;
+      //std::cout << "Gen text pairs done " << line.m_pairs.size() << " pairs" << std::endl;
       line.merge_text_pairs();
       line.gen_initial_lines();
       line.merge_initial_lines();

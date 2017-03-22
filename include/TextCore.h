@@ -86,7 +86,7 @@ class TextLine {
     void vis_rotated_lines(const std::vector<cv::RotatedRect>& lines); 
     cv::Mat m_im;
     std::string m_image_name;
-    std::string m_save_dir;;
+    std::string m_save_dir;
     std::vector<TextChar> m_boxes;
     std::vector<TextPair> m_pairs;
     std::vector<TextPair> m_final_pairs;

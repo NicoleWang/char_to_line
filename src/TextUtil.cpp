@@ -151,9 +151,24 @@ bool is_two_pairs_same_angle(const TextPair& p1, const TextPair& p2) {
         meany2 += p2_center.y;
     }
     meany2 = meany2 / p2.m_pair_idx.size();
+    /*
+    std::cout << "all p1 box ids: "; 
+    for(unsigned int  i = 0; i < p1.m_pair_idx.size(); ++i) {
+        std::cout << p1.m_pair_idx[i].first << " ";
+    }
+    std::cout << std::endl;
+    std::cout << "p1 seed id: " << p1.m_idx << " " << "p1 start box id: " << p1.m_start << " p1 end box id: " << p1.m_end <<  std::endl;
 
-    float angle1 = std::fabs(compute_pts_angle(p1.m_pair_idx[0].second.m_center, p1.m_pair_idx[p1.m_end].second.m_center));
-    float angle2 = std::fabs(compute_pts_angle(p2.m_pair_idx[0].second.m_center, p1.m_pair_idx[p1.m_end].second.m_center));
+    std::cout << "all p2 box ids: "; 
+    for(unsigned int  i = 0; i < p2.m_pair_idx.size(); ++i) {
+        std::cout  << p2.m_pair_idx[i].first << " ";
+    }
+    std::cout << std::endl;
+    std::cout << "p2 seed id: " << p2.m_idx << " " << "p2 start box id: " << p2.m_start << " p2 end box id: " << p2.m_end <<  std::endl;
+    */
+    int p1_size = p1.m_pair_idx.size();
+    float angle1 = std::fabs(compute_pts_angle(p1.m_pair_idx[0].second.m_center, p1.m_pair_idx[p1_size - 1].second.m_center));
+    float angle2 = std::fabs(compute_pts_angle(p2.m_pair_idx[0].second.m_center, p1.m_pair_idx[p1_size - 1].second.m_center));
     /*
     if (std::fabs(meany2 - meany1) >= p1.m_pair_idx[0].second.m_box.height * 0.5) {
         return false;
