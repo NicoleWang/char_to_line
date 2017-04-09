@@ -179,15 +179,15 @@ int GetTextLine(const cv::Mat& img,
                 std::vector< std::vector<cv::Rect> >& char_pos) {
 
       std::vector<caffe::Box> dets;
-      pthread_mutex_lock(&det_mutex);
+//      pthread_mutex_lock(&det_mutex);
       detector->Detect(img, dets);
-      pthread_mutex_unlock(&det_mutex);
+//      pthread_mutex_unlock(&det_mutex);
 
       std::vector<text::TextChar> chars;
       //line generation
       caffe::TransBox2TextChar(dets, chars);
       //std::cout << "Detect " << chars.size() << " chars " << std::endl;
-      std::vector<text::TextChar> nms_boxes = text::nms_boxes(chars, 0.3);
+      std::vector<text::TextChar> nms_boxes = text::nms_boxes(chars, 0.5);
       text::TextLine line(img, nms_boxes);
       line.m_direction = text::HOR_ONLY;
       //line.m_image_name = imglist[i];
