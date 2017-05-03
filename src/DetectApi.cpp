@@ -132,6 +132,7 @@ int GetTextLine(const cv::Mat& img,
 #if 1
       cv::Mat vis_im = img.clone();
       vis_boxes(vis_im, nms_boxes);
+      std::string prefix = common::get_name_prefix(image_name);
       char save_name[256];
       sprintf(save_name, "%s/char_%s", save_dir.c_str(), image_name.c_str());
       imwrite(save_name, vis_im);
@@ -176,7 +177,8 @@ int GetTextLine(const cv::Mat& img,
                 std::vector<cv::Mat>& LineImgs, 
                 std::vector<cv::Mat>& LineBins,
                 std::vector<cv::Point>& offsetPts,
-                std::vector< std::vector<cv::Rect> >& char_pos) {
+                std::vector< std::vector<cv::Rect> >& char_pos,
+                std::vector<cv::Rect>& line_pos) {
 
       std::vector<caffe::Box> dets;
 //      pthread_mutex_lock(&det_mutex);
@@ -199,6 +201,7 @@ int GetTextLine(const cv::Mat& img,
       line.merge_initial_lines();
       line.get_all_rotated_lines();
       line.crop_and_rotate_lines(LineImgs, char_pos);
+      line_pos = line.m_final_lines;
 
       for(unsigned int i = 0; i < LineImgs.size(); ++i) {
           cv::Mat im_gray;

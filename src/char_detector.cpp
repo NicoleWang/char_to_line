@@ -80,6 +80,7 @@ Detector::Detector(const string& model_file,
 #else 
     Caffe::set_mode(Caffe::GPU);
     Caffe::SetDevice(gpu_id);
+    gpu_id_ = gpu_id;
 #endif
 
     /* load trained caffe model */
@@ -285,6 +286,8 @@ void Detector::retrieve_bboxes(const shared_ptr<Blob<float> >& rois_blob,
 }
 
 void  Detector::Detect(const cv::Mat& img, std::vector<Box>& final_dets) {
+    Caffe::set_mode(Caffe::GPU);
+    Caffe::SetDevice(gpu_id_);
     cv::Mat post_img;
     Preprocess(img, post_img);
     Blob<float>* input_image = net_->input_blobs()[0];

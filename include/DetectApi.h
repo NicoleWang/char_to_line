@@ -32,7 +32,8 @@ int GetTextLine(const cv::Mat& img,
                 std::vector<cv::Mat>& LineImgs, 
                 std::vector<cv::Mat>& LineBins,
                 std::vector<cv::Point>& offsetPts, 
-                std::vector< std::vector<cv::Rect> >& char_pos);
+                std::vector< std::vector<cv::Rect> >& char_pos,
+                std::vector<cv::Rect>& line_pos);
 int GetTextLine(const cv::Mat& img,
                 caffe::Detector* detector,
                 std::vector<cv::Mat>& LineImgs, 

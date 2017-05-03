@@ -71,6 +71,7 @@ class Detector {
   unsigned int max_size_;
   cv::Scalar mean_;
   float image_scale_;
+  int gpu_id_;
 };
 
 }//end of namespace caffe

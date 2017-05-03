@@ -437,6 +437,7 @@ void TextLine::get_rotated_bounding_box(const TextPair& line) {
    cv::RotatedRect bbox = minAreaRect(cv::Mat(contour));
 
    m_rotated_lines.push_back(bbox);
+   m_final_lines.push_back(bbox.boundingRect());
 }
 
 void TextLine::get_all_rotated_lines() {
